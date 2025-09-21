@@ -267,12 +267,12 @@ function showFormErrors(errors) {
 async function submitContactForm(data) {
     const submitButton = document.querySelector('#contact-form button[type="submit"]');
     const originalText = submitButton.textContent;
-    
+    debugger;
     // Show loading state
     submitButton.textContent = 'Sending...';
     submitButton.disabled = true;
     submitButton.classList.add('loading');
-
+    //debugger;
     const recaptchaToken = grecaptcha.getResponse();
 
     if (!recaptchaToken) {
@@ -282,15 +282,19 @@ async function submitContactForm(data) {
 
 
     try {
-        const response = await fetch('https://api.ankurdigital.us/contact', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
 
-        const result = await response.json();
+        const raw = JSON.stringify(data);
+
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+        };
+
+        const response =  await  fetch("https://api.ankurdigital.us/contact", requestOptions);
 
         if (response.ok) {
 
