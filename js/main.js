@@ -232,7 +232,7 @@ function validateContactForm(data) {
         errors.push('Last name is required and must be at least 2 characters');
     }
     
-    if (!data.email || !isValidEmail(data.email)) {
+    if (!data.emailAddress || !isValidEmail(data.emailAddress)) {
         errors.push('A valid email address is required');
     }
     
