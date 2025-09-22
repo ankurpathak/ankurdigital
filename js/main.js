@@ -264,22 +264,35 @@ function showFormErrors(errors) {
 }
 
 // Submit contact form
+// Submit contact form
 async function submitContactForm(data) {
     const submitButton = document.querySelector('#contact-form button[type="submit"]');
     const originalText = submitButton.textContent;
-    debugger;
-    // Show loading state
-    submitButton.textContent = 'Sending...';
-    submitButton.disabled = true;
-    submitButton.classList.add('loading');
-    //debugger;
+
+    // Set loading state
+    const setLoadingState = (isLoading) => {
+        if (isLoading) {
+            submitButton.dataset.originalText = originalText;
+            submitButton.textContent = 'Sending...';
+            submitButton.disabled = true;
+            submitButton.classList.add('loading');
+        } else {
+            submitButton.textContent = submitButton.dataset.originalText || originalText;
+            submitButton.disabled = false;
+            submitButton.classList.remove('loading');
+            delete submitButton.dataset.originalText;
+        }
+    };
+
+    setLoadingState(true);
+
     const recaptchaToken = grecaptcha.getResponse();
 
     if (!recaptchaToken) {
         alert('Please complete the reCAPTCHA challenge.');
+        setLoadingState(false);
         return;
     }
-
 
     try {
         const myHeaders = new Headers();
@@ -294,10 +307,9 @@ async function submitContactForm(data) {
             redirect: "follow"
         };
 
-        const response =  await  fetch("https://api.ankurdigital.us/contact", requestOptions);
+        const response = await fetch("https://api.ankurdigital.us/contact", requestOptions);
 
         if (response.ok) {
-
             grecaptcha.reset();
 
             // Reset form
@@ -306,29 +318,23 @@ async function submitContactForm(data) {
             // Show success message
             showSuccessMessage('Thank you for your message! We\'ll get back to you within 24 hours.');
 
-            // Reset button
-            submitButton.textContent = originalText;
-            submitButton.disabled = false;
-            submitButton.classList.remove('loading');
-
             // Log form data (for development - remove in production)
             console.log('Contact form submitted:', data);
 
         } else {
+            const result = await response.json().catch(() => ({}));
             alert('Error sending message: ' + (result.error || 'Unknown error'));
             grecaptcha.reset();
         }
+
     } catch (error) {
         alert('Network error: ' + error.message);
         grecaptcha.reset();
+    } finally {
+        setLoadingState(false);
     }
-    
-    // Simulate form submission (replace with actual API call)
-    setTimeout(() => {
-
-        
-    }, 2000);
 }
+
 
 // Show success message
 function showSuccessMessage(message) {
